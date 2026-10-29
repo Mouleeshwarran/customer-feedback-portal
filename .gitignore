@@ -1,0 +1,30 @@
+# Local environment and secrets
+.env
+.env.*
+!*.env.example
+frontend/.env
+frontend/.env.*
+
+# Dependencies and generated builds
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+backend/target/
+
+# Local database files
+**/*.mv.db
+**/*.trace.db
+
+# Local backups and diagnostic files
+/backend.zip
+/feedback-test.json
+/backend/startup-error.txt
+/backend/test-error.txt
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs and Python cache
+*.log
+__pycache__/
