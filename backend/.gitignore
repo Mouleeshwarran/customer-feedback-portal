@@ -1,0 +1,71 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+
+# Local H2 database files
+**/*.mv.db
+**/*.trace.db
+
+# Logs and temporary files
+*.log
+__pycache__/
+
+# Optional local backup archive
+backend.zip
+
+# Local environment configuration
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Local database files
+**/*.mv.db
+**/*.trace.db
+ 
+# Local backups and diagnostic files
+backend.zip
+feedback-test.json
+backend/feedback-test.json
+backend/startup-error.txt
+backend/test-error.txt
