@@ -244,28 +244,47 @@ public class FeedbackService {
     }
 
  
+
 @Transactional(readOnly = true)
 public DashboardStatsResponse getDashboardStats(String email) {
 
-    User customer = userRepo.findByEmailIgnoreCase(email)
+    User user = userRepo.findByEmailIgnoreCase(email)
         .orElseThrow(() ->
             new IllegalArgumentException("User not found"));
 
-    long total = feedbackRepo.countByCustomerId(
-        customer.getId()
-    );
+    long total;
+    double average;
+    long pending;
 
-    double average = feedbackRepo.calculateAverageRatingByCustomerId(
-        customer.getId()
-    );
+    if (user.getRole() == UserRole.CUSTOMER) {
 
-    long pending = feedbackRepo.countByCustomerIdAndStatus(
-        customer.getId(),
-        FeedbackStatus.PENDING
-    );
+        // Customers see statistics for their own submissions.
+        total = feedbackRepo.countByCustomerId(user.getId());
+
+        average = feedbackRepo.calculateAverageRatingByCustomerId(
+            user.getId()
+        );
+
+        pending = feedbackRepo.countByCustomerIdAndStatus(
+            user.getId(),
+            FeedbackStatus.PENDING
+        );
+
+    } else {
+
+        // Moderators and administrators see portal-wide statistics.
+        total = feedbackRepo.count();
+
+        average = feedbackRepo.calculateAverageRating();
+
+        pending = feedbackRepo.countByStatus(
+            FeedbackStatus.PENDING
+        );
+    }
 
     return new DashboardStatsResponse(total, average, pending);
 }
+
 
 @Transactional(readOnly = true)
 public Page<AbuseFlagResponse> getUnresolvedAbuseFlags(

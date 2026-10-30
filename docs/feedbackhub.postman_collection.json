@@ -1,0 +1,223 @@
+{
+  "info": {
+    "name": "FeedbackHub API Collection",
+    "description": "Postman Collection for Customer Feedback Portal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Get Public Feedback",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/feedback/public?page=0&size=10"
+          }
+        },
+        {
+          "name": "Get Active Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/categories"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "item": [
+        {
+          "name": "Submit Feedback",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "customer@example.com" },
+                { "key": "password", "value": "CustomerDemo123!" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": 1,\n  \"rating\": 5,\n  \"text\": \"Exceptional customer service experience!\",\n  \"privateFeedback\": false\n}"
+            },
+            "url": "{{baseUrl}}/api/feedback"
+          }
+        },
+        {
+          "name": "Get My Submissions",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "customer@example.com" },
+                { "key": "password", "value": "CustomerDemo123!" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/feedback/my?page=0&size=10"
+          }
+        },
+        {
+          "name": "Report Abuse (Flag Feedback)",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "customer@example.com" },
+                { "key": "password", "value": "CustomerDemo123!" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Inappropriate content violating community guidelines.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/feedback/1/flags"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Moderator",
+      "item": [
+        {
+          "name": "Get Pending Feedback Queue",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "moderator@example.com" },
+                { "key": "password", "value": "ModeratorDemo123!" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/feedback?page=0&size=20"
+          }
+        },
+        {
+          "name": "Moderate Feedback (Approve/Reject/Hide)",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "moderator@example.com" },
+                { "key": "password", "value": "ModeratorDemo123!" }
+              ]
+            },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APPROVED\",\n  \"reason\": \"Constructive feedback conforming to portal guidelines.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/admin/feedback/1/moderate"
+          }
+        },
+        {
+          "name": "Get Unresolved Abuse Reports",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "moderator@example.com" },
+                { "key": "password", "value": "ModeratorDemo123!" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/reports?page=0&size=20"
+          }
+        },
+        {
+          "name": "Resolve Abuse Report",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "moderator@example.com" },
+                { "key": "password", "value": "ModeratorDemo123!" }
+              ]
+            },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/admin/reports/1/resolve"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Administrator",
+      "item": [
+        {
+          "name": "Get Admin Dashboard Stats",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "admin@example.com" },
+                { "key": "password", "value": "AdminDemo123!" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/stats"
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "admin@example.com" },
+                { "key": "password", "value": "AdminDemo123!" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/users?page=0&size=50"
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "admin@example.com" },
+                { "key": "password", "value": "AdminDemo123!" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mobile App\",\n  \"description\": \"Feedback related to iOS and Android applications\",\n  \"active\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/admin/categories"
+          }
+        },
+        {
+          "name": "Get Audit Trail",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "admin@example.com" },
+                { "key": "password", "value": "AdminDemo123!" }
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/audit?page=0&size=50"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ]
+}

@@ -1,12 +1,13 @@
-
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export async function apiRequest(
   path,
   { username, password, ...options } = {}
 ) {
+  const isFormData = options.body instanceof FormData;
+
   const headers = {
-    "Content-Type": "application/json",
+    ...(!isFormData && { "Content-Type": "application/json" }),
     ...options.headers,
   };
 
@@ -20,31 +21,31 @@ export async function apiRequest(
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Request failed: ${response.status}`);
+    let errorMessage = `Request failed: ${response.status}`;
+    try {
+      const errorJson = await response.json();
+      errorMessage = errorJson.message || errorJson.error || errorMessage;
+    } catch {
+      try {
+        const text = await response.text();
+        if (text) errorMessage = text;
+      } catch {
+        // use default message
+      }
+    }
+    throw new Error(errorMessage);
   }
 
-  // Handle responses that contain no body.
+  // Handle responses that contain no body
   if (response.status === 204 || response.status === 205) {
-    return null;
-  }
-
-  // Read the body once and parse JSON only when content exists.
-  const responseText = await response.text();
-
-  if (!responseText.trim()) {
     return null;
   }
 
   const contentType = response.headers.get("content-type") || "";
 
   if (contentType.includes("application/json")) {
-    try {
-      return JSON.parse(responseText);
-    } catch {
-      throw new Error("The server returned invalid JSON.");
-    }
+    return response.json();
   }
 
-  return responseText;
+  return response.text();
 }

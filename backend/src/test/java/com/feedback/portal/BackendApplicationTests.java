@@ -1,19 +1,23 @@
 
 package com.feedback.portal;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
 class BackendApplicationTests {
 
     @Autowired
@@ -21,7 +25,7 @@ class BackendApplicationTests {
 
     @Test
     void contextLoads() {
-        // Verifies that the Spring application starts.
+        // Verifies that the Spring application context starts.
     }
 
     @Test
@@ -42,22 +46,14 @@ class BackendApplicationTests {
     @Test
     void customerCannotAccessAdminFeedback() throws Exception {
         mockMvc.perform(get("/api/admin/feedback")
-                .with(org.springframework.security.test.web.servlet.request
-                    .SecurityMockMvcRequestPostProcessors.httpBasic(
-                        "customer@example.com",
-                        "CustomerDemo123!"
-                    )))
+                .with(httpBasic("customer@example.com", "CustomerDemo123!")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void invalidRatingIsRejected() throws Exception {
         mockMvc.perform(post("/api/feedback")
-                .with(org.springframework.security.test.web.servlet.request
-                    .SecurityMockMvcRequestPostProcessors.httpBasic(
-                        "customer@example.com",
-                        "CustomerDemo123!"
-                    ))
+                .with(httpBasic("customer@example.com", "CustomerDemo123!"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
@@ -73,11 +69,7 @@ class BackendApplicationTests {
     @Test
     void blankFeedbackTextIsRejected() throws Exception {
         mockMvc.perform(post("/api/feedback")
-                .with(org.springframework.security.test.web.servlet.request
-                    .SecurityMockMvcRequestPostProcessors.httpBasic(
-                        "customer@example.com",
-                        "CustomerDemo123!"
-                    ))
+                .with(httpBasic("customer@example.com", "CustomerDemo123!"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
@@ -88,5 +80,17 @@ class BackendApplicationTests {
                     }
                     """))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void publicFeedbackEndpointRequiresNoAuth() throws Exception {
+        mockMvc.perform(get("/api/feedback/public"))
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    void categoriesEndpointRequiresNoAuth() throws Exception {
+        mockMvc.perform(get("/api/categories"))
+               .andExpect(status().isOk());
     }
 }

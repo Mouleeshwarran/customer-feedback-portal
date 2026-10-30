@@ -1,4 +1,3 @@
-
 package com.feedback.portal.security;
 
 import java.util.ArrayDeque;
@@ -43,6 +42,16 @@ public class SubmissionRateLimiter {
             }
 
             timestamps.addLast(now);
+        }
+    }
+
+    public void reset() {
+        attempts.clear();
+    }
+
+    public void reset(String email) {
+        if (email != null) {
+            attempts.remove(email.trim().toLowerCase());
         }
     }
 }

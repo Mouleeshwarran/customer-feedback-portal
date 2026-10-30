@@ -10,10 +10,15 @@ frontend/node_modules/
 frontend/dist/
 frontend/build/
 backend/target/
+target/
 
 # Local database files
 **/*.mv.db
 **/*.trace.db
+
+# Uploaded test files
+uploads/
+**/uploads/
 
 # Local backups and diagnostic files
 /backend.zip

@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: FeedbackHub — Customer Feedback Portal API
+  version: 1.0.0
+  description: Complete REST API for Customer Feedback, Moderation, Abuse Reporting, and Administration.
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+
+paths:
+  /api/feedback:
+    post:
+      summary: Submit new feedback
+      description: Allows authenticated customers to submit feedback into PENDING review state.
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+      responses:
+        '200':
+          description: Feedback submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackResponse'
+        '400':
+          description: Validation error
+        '429':
+          description: Rate limit exceeded (Max 3/minute)
+
+  /api/feedback/public:
+    get:
+      summary: List approved public feedback
+      description: Returns APPROVED, non-private feedback with optional search, category, and rating filters.
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: rating
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Paginated public feedback list
+
+  /api/feedback/my:
+    get:
+      summary: List authenticated customer's own submissions
+      security:
+        - basicAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Paginated feedback submitted by authenticated user
+
+  /api/feedback/{id}/flags:
+    post:
+      summary: Report feedback for guidelines violation
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  maxLength: 500
+      responses:
+        '201':
+          description: Abuse report registered
+        '409':
+          description: Already reported by this user
+
+  /api/feedback/{feedbackId}/attachments:
+    post:
+      summary: Upload evidence attachment to feedback
+      security:
+        - basicAuth: []
+      parameters:
+        - name: feedbackId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: File uploaded successfully
+        '400':
+          description: File type/MIME invalid or oversized
+        '403':
+          description: Not owner of feedback
+
+  /api/admin/feedback:
+    get:
+      summary: List pending feedback items awaiting review
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Pending moderation queue
+
+  /api/admin/feedback/{id}/moderate:
+    patch:
+      summary: Record moderation decision
+      security:
+        - basicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision, reason]
+              properties:
+                decision:
+                  type: string
+                  enum: [APPROVED, REJECTED, HIDDEN]
+                reason:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Moderation decision saved
+
+  /api/admin/users:
+    get:
+      summary: List all user accounts (Administrator only)
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: List of user accounts
+    post:
+      summary: Create new user account (Administrator only)
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: User created
+
+  /api/admin/categories:
+    get:
+      summary: List feedback categories
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: List of categories
+    post:
+      summary: Create new feedback category
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  maxLength: 60
+                description:
+                  type: string
+                  maxLength: 300
+                active:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: Category created
+
+  /api/categories:
+    get:
+      summary: List active categories (Public)
+      responses:
+        '200':
+          description: Active category options for feedback submission
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    FeedbackRequest:
+      type: object
+      required: [categoryId, rating, text]
+      properties:
+        categoryId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+          maxLength: 3000
+        privateFeedback:
+          type: boolean
+          default: false
+
+    FeedbackResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        rating:
+          type: integer
+        text:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, HIDDEN]
+        privateFeedback:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    UserRequest:
+      type: object
+      required: [email, password, role]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 12
+        role:
+          type: string
+          enum: [CUSTOMER, MODERATOR, ADMINISTRATOR]
+        active:
+          type: boolean
+          default: true
